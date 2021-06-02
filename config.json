@@ -1,0 +1,20 @@
+{
+    "letterboxd":{
+        "usernames":[
+            "<username1>",
+            "<username2>"
+        ],
+        "discord_url": "<DISCORD_WEBHOOK_URL>"
+    },
+    "trakt":{
+        "usernames":[
+            "<username1>",
+            "<username2>"
+        ],
+        "trakt_api_key":"<API KEY>",
+        "movie_db_api_key":"<API_KEY>",
+        "discord_url": "<DISCORD_WEBHOOK_URL>"
+    },
+    "post_freq_hrs": 1,
+    "log_path": "."
+}
