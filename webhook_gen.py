@@ -42,9 +42,11 @@ def main():
 
             if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
                 entries_to_post.append(entry)
-        webhook_obj = letterboxd.letterboxd_to_webhook(entries_to_post)
-        r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-        logger.info(f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+        if len(entries_to_post) > 0:
+            webhook_obj = letterboxd.letterboxd_to_webhook(entries_to_post)
+            print(webhook_obj)
+            # r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
+            logger.info(f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}")
 
     # Poll Trakt.tv Ratings
     for user_slug in TRAKT_USERNAMES:
@@ -61,9 +63,11 @@ def main():
             published_time = datetime.strptime(entry['rated_at'], "%Y-%m-%dT%H:%M:%S.000Z")
             if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
                 entries_to_post.append(entry)
-        webhook_obj = trakt.rating_to_webhook(entries_to_post)
-        r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-        logger.info(f"Trakt.tv posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+        if len(entries_to_post) > 0:
+            webhook_obj = trakt.rating_to_webhook(entries_to_post)
+            print(webhook_obj)
+            # r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
+            logger.info(f"Trakt.tv posts found for {username}, webhook status: {r.status_code}: {r.reason}")
 
     logger.info(f"Polled {len(LETTERBOXD_USERNAMES)} Letterboxd feeds and {len(TRAKT_USERNAMES)} Trakt.tv users.")
 
