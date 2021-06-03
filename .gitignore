@@ -1,3 +1,5 @@
 config.json
 .idea/
 *_env/
+*.log
+__pycache__/
