@@ -2,6 +2,7 @@ import time
 
 import bs4
 import html2text
+import pandas as pd
 import requests
 
 import tmdb
@@ -53,8 +54,7 @@ def letterboxd_to_webhook(entries: list):
     elif num_lists > 0:
         verb = f"created {num_lists} {list_plural}"
     
-    webhook_obj = {"content": f"{author} {verb} on Letterboxd:"}
-    webhook_obj["embeds"] = embeds
+    webhook_obj = {"content": f"{author} {verb} on Letterboxd:", "embeds": embeds}
 
     return webhook_obj
 
@@ -104,6 +104,7 @@ def film_to_embed(entry):
         "description": description,
         "url": entry["link"],
         "image": {"url": image_url},
+        "timestamp": pd.to_datetime(entry['published']).isoformat()
     }
 
     fields = []
@@ -183,15 +184,15 @@ def list_to_embed(list_entry):
             "name": f"{number}{item.a.text}",
             "value": item_desc_text,
         })
-        
-    
+
     list_description = f"{len(fields)} movies{list_overflow}\n\n{list_description}".strip()
 
     embed_entry = {
             "title": list_entry['title'],
             "description": list_description,
             "url": list_entry["link"],
-            "fields": fields
+            "fields": fields,
+            "timestamp": pd.to_datetime(list_entry['published']).isoformat()
         }
 
     return embed_entry

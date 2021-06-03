@@ -1,15 +1,14 @@
+import json
 import logging
-import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import feedparser
+import pandas as pd
 import requests
 
 import config
 import letterboxd
 import trakt
-
-import json
 
 LOG_PATH = config.LOG_PATH
 LETTERBOXD_USERNAMES = config.LETTERBOXD_USERNAMES
@@ -41,9 +40,9 @@ def main():
         d = feedparser.parse(f"https://letterboxd.com/{username}/rss/")
         entries_to_post = []
         for entry in d["entries"]:
-            published_time = datetime.fromtimestamp(time.mktime(entry['published_parsed']))
+            published_time = pd.to_datetime(entry['published']).to_pydatetime()
 
-            if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
+            if (datetime.now(tz=timezone.utc) - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
                 entries_to_post.append(entry)
         if len(entries_to_post) > 0:
             webhook_obj = letterboxd.letterboxd_to_webhook(entries_to_post)
@@ -64,8 +63,8 @@ def main():
         r = requests.get(ratings_url, headers=headers)
 
         for entry in r.json():
-            published_time = datetime.strptime(entry['rated_at'], "%Y-%m-%dT%H:%M:%S.000Z")
-            if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
+            published_time = pd.to_datetime(entry['rated_at']).to_pydatetime()
+            if (datetime.now(tz=timezone.utc) - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
                 entries_to_post.append(entry)
         if len(entries_to_post) > 0:
             webhook_obj = trakt.rating_to_webhook(user_slug, entries_to_post)
