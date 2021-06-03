@@ -1,33 +1,26 @@
 import logging
-import os
 import time
 from datetime import datetime, timedelta
 
 import feedparser
 import requests
 
+import config
 import letterboxd
 import trakt
-import json
 
-with open("config.json", 'r') as f:
-    config = json.load(f)
+LOG_PATH = config.LOG_PATH
+LETTERBOXD_USERNAMES = config.LETTERBOXD_USERNAMES
+DISCORD_WEBHOOK_URL_LETTERBOXD = config.DISCORD_WEBHOOK_URL_LETTERBOXD
+POST_FREQUENCY_HRS = config.POST_FREQUENCY_HRS
 
-POST_FREQUENCY_HRS = config.get('post_freq_hrs', 1)
-
-DISCORD_WEBHOOK_URL_LETTERBOXD = config['letterboxd'].get('discord_url')
-LETTERBOXD_USERNAMES = config['letterboxd'].get('usernames')
-
-DISCORD_WEBHOOK_URL_TRAKT = config['trakt'].get('discord_url')
-TRAKT_CLIENT_ID = config['trakt'].get('trakt_api_key')
-TRAKT_API_URL = "https://api.trakt.tv"
-
-TMDB_API_KEY = config['trakt'].get('movie_db_api_key')
-
-LOG_PATH = os.path.abspath(config.get("log_path"))
+TRAKT_CLIENT_ID = config.TRAKT_CLIENT_ID
+TRAKT_API_URL = config.TRAKT_API_URL
+TRAKT_USERNAMES = config.TRAKT_USERNAMES
 
 
 def main():
+    # Setup logger
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
@@ -39,18 +32,40 @@ def main():
 
     logger.addHandler(file_handler)
 
-    # Handle Letterboxd
+    # Poll Letterboxd RSS feeds
 
     for username in LETTERBOXD_USERNAMES:
         d = feedparser.parse(f"https://letterboxd.com/{username}/rss/")
-
+        entries_to_post = []
         for entry in d["entries"]:
             published_time = datetime.fromtimestamp(time.mktime(entry['published_parsed']))
+
             if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
-                webhook_obj = letterboxd.letterboxd_to_webhook(entry) # TODO: Pass all entries together at once
-                r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-                logger.info(f"Post found for {username}, webhook status: {r.status_code}: {r.reason}")
-    logger.info(f"Finished running script for {len(LETTERBOXD_USERNAMES)} feeds.")
+                entries_to_post.append(entry)
+        webhook_obj = letterboxd.letterboxd_to_webhook(entries_to_post)
+        r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
+        logger.info(f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+
+    # Poll Trakt.tv Ratings
+    for user_slug in TRAKT_USERNAMES:
+        headers = {
+            'Content-Type': 'application/json',
+            'trakt-api-version': '2',
+            'trakt-api-key': TRAKT_CLIENT_ID
+        }
+        ratings_url = f"{TRAKT_API_URL}/users/{user_slug}/ratings/all/"
+
+        r = requests.get(ratings_url, headers=headers)
+
+        for entry in r.json():
+            published_time = datetime.strptime(entry['rated_at'], "%Y-%m-%dT%H:%M:%S.000Z")
+            if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
+                entries_to_post.append(entry)
+        webhook_obj = trakt.rating_to_webhook(entries_to_post)
+        r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
+        logger.info(f"Trakt.tv posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+
+    logger.info(f"Polled {len(LETTERBOXD_USERNAMES)} Letterboxd feeds and {len(TRAKT_USERNAMES)} Trakt.tv users.")
 
 
 if __name__ == "__main__":
