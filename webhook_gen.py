@@ -9,6 +9,8 @@ import config
 import letterboxd
 import trakt
 
+import json
+
 LOG_PATH = config.LOG_PATH
 LETTERBOXD_USERNAMES = config.LETTERBOXD_USERNAMES
 DISCORD_WEBHOOK_URL_LETTERBOXD = config.DISCORD_WEBHOOK_URL_LETTERBOXD
@@ -44,12 +46,13 @@ def main():
                 entries_to_post.append(entry)
         if len(entries_to_post) > 0:
             webhook_obj = letterboxd.letterboxd_to_webhook(entries_to_post)
-            print(webhook_obj)
+            print(json.dumps(webhook_obj, indent=4))
             # r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-            logger.info(f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+            # logger.info(f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}")
 
     # Poll Trakt.tv Ratings
     for user_slug in TRAKT_USERNAMES:
+        entries_to_post = []
         headers = {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
@@ -64,10 +67,10 @@ def main():
             if (datetime.now() - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
                 entries_to_post.append(entry)
         if len(entries_to_post) > 0:
-            webhook_obj = trakt.rating_to_webhook(entries_to_post)
-            print(webhook_obj)
+            webhook_obj = trakt.rating_to_webhook(user_slug, entries_to_post)
+            print(json.dumps(webhook_obj, indent=4))
             # r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-            logger.info(f"Trakt.tv posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+            # logger.info(f"Trakt.tv posts found for {username}, webhook status: {r.status_code}: {r.reason}")
 
     logger.info(f"Polled {len(LETTERBOXD_USERNAMES)} Letterboxd feeds and {len(TRAKT_USERNAMES)} Trakt.tv users.")
 

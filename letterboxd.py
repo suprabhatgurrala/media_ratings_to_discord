@@ -21,16 +21,39 @@ def letterboxd_to_webhook(entries: list):
     JSON payload to send via Discord webhook
     """
     embeds = []
+    num_lists = 0
+    num_films = 0
     for entry in entries:
         id_str = entry.get("id", '')
 
         if "letterboxd-watch" in id_str:
             embeds.append(film_to_embed(entry))
+            num_films += 1
         elif "letterboxd-list" in id_str:
             embeds.append(list_to_embed(entry))
+            num_lists += 1
 
     author = entries[0]['author']
-    webhook_obj = {"content": f"{author} on Letterboxd:"}
+    verb = ""
+    
+    if num_films == 1:
+        movie_plural = "movie"
+    else:
+        movie_plural = "movies"
+    
+    if num_lists == 1:
+        list_plural = "list"
+    else:
+        list_plural = "lists"
+    
+    if num_lists > 0 and num_films > 0:
+        verb = f"logged {num_films} {movie_plural} and created {num_lists} {list_plural}"
+    elif num_films > 0:
+        verb = f"logged {num_films} {movie_plural}"
+    elif num_lists > 0:
+        verb = f"created {num_lists} {list_plural}"
+    
+    webhook_obj = {"content": f"{author} {verb} on Letterboxd:"}
     webhook_obj["embeds"] = embeds
 
     return webhook_obj
@@ -110,10 +133,10 @@ def list_to_embed(list_entry):
     list_description = ""
     list_overflow = ""
     if len(list_description_p) == 1:
-        if "...plus" in list_description_p.text:
-            list_overflow = list_description_p.text
+        if "...plus" in list_description_p[0].text:
+            list_overflow = list_description_p[0].text
         else:
-            list_description = list_description_p.text
+            list_description = list_description_p[0].text
     elif len(list_description_p) == 2:
         list_description = list_description_p[0].text
         list_overflow = list_description_p[1].text
@@ -160,6 +183,9 @@ def list_to_embed(list_entry):
             "name": f"{number}{item.a.text}",
             "value": item_desc_text,
         })
+        
+    
+    list_description = f"{len(fields)} movies{list_overflow}\n\n{list_description}".strip()
 
     embed_entry = {
             "title": list_entry['title'],
@@ -183,7 +209,7 @@ def get_tmdb_from_letterboxd(letterboxd_url):
     URL to the film on TheMovieDB
     """
     raw_html = requests.get(letterboxd_url).text
-    parsed_html = bs4.BeautifulSoup(raw_html)
+    parsed_html = bs4.BeautifulSoup(raw_html, "html.parser")
     tmdb_url = parsed_html.find('a', attrs={'data-track-action': "TMDb"})['href']
     tmdb_id = tmdb_url.split("/")[-2]
     return tmdb_id
