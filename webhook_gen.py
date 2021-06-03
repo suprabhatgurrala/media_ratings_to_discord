@@ -19,6 +19,7 @@ POST_FREQUENCY_HRS = config.POST_FREQUENCY_HRS
 TRAKT_CLIENT_ID = config.TRAKT_CLIENT_ID
 TRAKT_API_URL = config.TRAKT_API_URL
 TRAKT_USERNAMES = config.TRAKT_USERNAMES
+DISCORD_WEBHOOK_URL_TRAKT = config.DISCORD_WEBHOOK_URL_TRAKT
 
 
 def main():
@@ -69,8 +70,8 @@ def main():
         if len(entries_to_post) > 0:
             webhook_obj = trakt.rating_to_webhook(user_slug, entries_to_post)
             logger.debug(f"Webhook payload: {json.dumps(webhook_obj, indent=4)}")
-            r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-            logger.info(f"Trakt.tv posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+            r = requests.post(DISCORD_WEBHOOK_URL_TRAKT, json=webhook_obj)
+            logger.info(f"Trakt.tv posts found for {user_slug}, webhook status: {r.status_code}: {r.reason}")
 
     logger.info(f"Polled {len(LETTERBOXD_USERNAMES)} Letterboxd feeds and {len(TRAKT_USERNAMES)} Trakt.tv users.")
 
