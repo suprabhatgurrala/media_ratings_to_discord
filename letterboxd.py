@@ -104,7 +104,7 @@ def film_to_embed(entry):
         "description": description,
         "url": entry["link"],
         "image": {"url": image_url},
-        "timestamp": pd.to_datetime(entry['published']).isoformat()
+        "timestamp": pd.to_datetime(list_entry['published']).tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
     }
 
     fields = []
@@ -192,7 +192,7 @@ def list_to_embed(list_entry):
             "description": list_description,
             "url": list_entry["link"],
             "fields": fields,
-            "timestamp": pd.to_datetime(list_entry['published']).isoformat()
+            "timestamp": pd.to_datetime(list_entry['published']).tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
     return embed_entry
