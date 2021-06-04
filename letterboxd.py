@@ -141,12 +141,12 @@ def list_to_embed(list_entry):
     elif len(list_description_p) == 2:
         list_description = list_description_p[0].text
         list_overflow = list_description_p[1].text
-
+        
     if list_overflow:
         overflow = int(list_overflow.replace("...plus ", "").replace(" more. View the full list on Letterboxd.", ""))
     else:
         overflow = 0
-
+        
     ol_tags = soup.find_all('ol', recursive=False)
     ul_tags = soup.find_all('ul', recursive=False)
 
@@ -189,22 +189,24 @@ def list_to_embed(list_entry):
             "name": f"{number}{item.a.text}",
             "value": item_desc_text,
         })
-
+    
     if overflow > 0:
         fields.append({
             "name": f"{list_overflow.replace('View the full list on Letterboxd.', '')}",
             "value": f"[View the full list on Letterboxd.]({list_entry['link']})"
         })
+        # Subtract 1 from overflow since we've added an extra field
+        overflow -= 1
 
     list_description = f"List of {len(fields) + overflow} movies:\n\n{list_description}".strip()
 
     embed_entry = {
-        "title": list_entry['title'],
-        "description": list_description,
-        "url": list_entry["link"],
-        "fields": fields,
-        "timestamp": pd.to_datetime(list_entry['published']).tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
-    }
+            "title": list_entry['title'],
+            "description": list_description,
+            "url": list_entry["link"],
+            "fields": fields,
+            "timestamp": pd.to_datetime(list_entry['published']).tz_convert("UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
+        }
 
     return embed_entry
 
