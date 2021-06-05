@@ -27,7 +27,7 @@ def letterboxd_to_webhook(entries: list):
     for entry in entries:
         id_str = entry.get("id", '')
 
-        if "letterboxd-watch" in id_str:
+        if "letterboxd-watch" in id_str or "letterboxd-review" in id_str:
             embeds.append(film_to_embed(entry))
             num_films += 1
         elif "letterboxd-list" in id_str:
