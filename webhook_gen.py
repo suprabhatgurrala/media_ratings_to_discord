@@ -20,20 +20,20 @@ TRAKT_API_URL = config.TRAKT_API_URL
 TRAKT_USERNAMES = config.TRAKT_USERNAMES
 DISCORD_WEBHOOK_URL_TRAKT = config.DISCORD_WEBHOOK_URL_TRAKT
 
+# Setup logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+file_handler = logging.FileHandler(LOG_PATH, "a+")
+file_handler.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter("{asctime} - {name} - {levelname} - {message}", style="{")
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+
 
 def main():
-    # Setup logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-
-    file_handler = logging.FileHandler(LOG_PATH, "a+")
-    file_handler.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter("{asctime} - {name} - {levelname} - {message}", style="{")
-    file_handler.setFormatter(formatter)
-
-    logger.addHandler(file_handler)
-
     # Poll Letterboxd RSS feeds
 
     for username in LETTERBOXD_USERNAMES:
@@ -76,4 +76,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except:
+        logger.exception('Exception while running main()')
+        raise
