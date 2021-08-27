@@ -70,7 +70,7 @@ def rating_to_webhook(user_slug, entries):
         embeds.append({
             "title": show_title,
             "description": description,
-            "url": f"https://trakt.tv/users/{user_slug}/ratings",
+            # "url": f"https://trakt.tv/users/{user_slug}/ratings",
             "image": {"url": image_url},
             "fields": fields,
             "timestamp": entry['rated_at']
