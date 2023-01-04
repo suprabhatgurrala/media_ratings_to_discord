@@ -51,3 +51,29 @@ def fetch_movie_description(tmdb_id):
     release_date = datetime.strptime(tmdb_info['release_date'], "%Y-%m-%d")
 
     return f"{tmdb_info['overview']}\n\nReleased on {release_date.strftime('%b %d, %Y')}"
+
+
+def fetch_director(tmdb_id):
+    movie_info_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
+
+    headers = {
+        'Content-Type': 'application/json',
+    }
+
+    params = {
+        "api_key": TMDB_API_KEY,
+        "append_to_response": "credits"
+    }
+
+    r = requests.get(movie_info_url, headers=headers, params=params)
+
+    tmdb_info = r.json()
+
+    directors = []
+    for crew in tmdb_info['credits']['crew']:
+        if crew['job'] == 'Director':
+            directors.append(crew['name'])
+            
+    director_str = ', '.join(directors)
+
+    return f"Directed by {director_str}"

@@ -178,7 +178,7 @@ def list_to_embed(list_entry):
         if len(item_desc_text.strip()) == 0:
             # value cannot be empty
             tmdb_id = get_tmdb_from_letterboxd(item.a['href'])
-            item_desc_text = tmdb.fetch_movie_description(tmdb_id)
+            item_desc_text = tmdb.fetch_director(tmdb_id)
 
         if ordered:
             number = f"{i + 1}. "
