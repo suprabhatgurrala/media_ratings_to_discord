@@ -1,5 +1,0 @@
-bs4
-feedparser
-html2text
-pandas
-requests

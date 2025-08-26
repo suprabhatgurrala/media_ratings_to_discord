@@ -15,18 +15,16 @@ def fetch_poster(tmdb_id):
     tv_image_url = f"https://api.themoviedb.org/3/tv/{tmdb_id}"
 
     headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
     }
 
-    params = {
-        "api_key": TMDB_API_KEY
-    }
+    params = {"api_key": TMDB_API_KEY}
 
     r2 = requests.get(tv_image_url, headers=headers, params=params)
 
     tmdb_info = r2.json()
 
-    image_path = tmdb_info['poster_path']
+    image_path = tmdb_info["poster_path"]
 
     poster_url = f"{TMDB_BASE_IMG_URL}{image_path}"
 
@@ -37,43 +35,40 @@ def fetch_movie_description(tmdb_id):
     movie_info_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
 
     headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
     }
 
-    params = {
-        "api_key": TMDB_API_KEY
-    }
+    params = {"api_key": TMDB_API_KEY}
 
     r = requests.get(movie_info_url, headers=headers, params=params)
 
     tmdb_info = r.json()
 
-    release_date = datetime.strptime(tmdb_info['release_date'], "%Y-%m-%d")
+    release_date = datetime.strptime(tmdb_info["release_date"], "%Y-%m-%d")
 
-    return f"{tmdb_info['overview']}\n\nReleased on {release_date.strftime('%b %d, %Y')}"
+    return (
+        f"{tmdb_info['overview']}\n\nReleased on {release_date.strftime('%b %d, %Y')}"
+    )
 
 
 def fetch_director(tmdb_id):
     movie_info_url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
 
     headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
     }
 
-    params = {
-        "api_key": TMDB_API_KEY,
-        "append_to_response": "credits"
-    }
+    params = {"api_key": TMDB_API_KEY, "append_to_response": "credits"}
 
     r = requests.get(movie_info_url, headers=headers, params=params)
 
     tmdb_info = r.json()
 
     directors = []
-    for crew in tmdb_info['credits']['crew']:
-        if crew['job'] == 'Director':
-            directors.append(crew['name'])
-            
-    director_str = ', '.join(directors)
+    for crew in tmdb_info["credits"]["crew"]:
+        if crew["job"] == "Director":
+            directors.append(crew["name"])
+
+    director_str = ", ".join(directors)
 
     return f"Directed by {director_str}"

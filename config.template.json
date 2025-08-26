@@ -16,5 +16,5 @@
         "discord_url": "<DISCORD_WEBHOOK_URL>"
     },
     "post_freq_hrs": 1,
-    "log_path": "."
+    "log_path": "path_to_log_file.log"
 }

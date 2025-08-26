@@ -40,44 +40,54 @@ def main():
         d = feedparser.parse(f"https://letterboxd.com/{username}/rss/")
         entries_to_post = []
         for entry in d["entries"]:
-            published_time = pd.to_datetime(entry['published']).to_pydatetime()
+            published_time = pd.to_datetime(entry["published"]).to_pydatetime()
 
-            if (datetime.now(tz=timezone.utc) - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
+            if (datetime.now(tz=timezone.utc) - published_time) < timedelta(
+                hours=POST_FREQUENCY_HRS
+            ):
                 entries_to_post.append(entry)
         if len(entries_to_post) > 0:
             webhook_obj = letterboxd.letterboxd_to_webhook(entries_to_post)
             logger.debug(f"Webhook payload: {json.dumps(webhook_obj, indent=4)}")
             r = requests.post(DISCORD_WEBHOOK_URL_LETTERBOXD, json=webhook_obj)
-            logger.info(f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}")
+            logger.info(
+                f"Letterboxd posts found for {username}, webhook status: {r.status_code}: {r.reason}"
+            )
 
     # Poll Trakt.tv Ratings
     for user_slug in TRAKT_USERNAMES:
         entries_to_post = []
         headers = {
-            'Content-Type': 'application/json',
-            'trakt-api-version': '2',
-            'trakt-api-key': TRAKT_CLIENT_ID
+            "Content-Type": "application/json",
+            "trakt-api-version": "2",
+            "trakt-api-key": TRAKT_CLIENT_ID,
         }
         ratings_url = f"{TRAKT_API_URL}/users/{user_slug}/ratings/all/"
 
         r = requests.get(ratings_url, headers=headers)
 
         for entry in r.json():
-            published_time = pd.to_datetime(entry['rated_at']).to_pydatetime()
-            if (datetime.now(tz=timezone.utc) - published_time) < timedelta(hours=POST_FREQUENCY_HRS):
+            published_time = pd.to_datetime(entry["rated_at"]).to_pydatetime()
+            if (datetime.now(tz=timezone.utc) - published_time) < timedelta(
+                hours=POST_FREQUENCY_HRS
+            ):
                 entries_to_post.append(entry)
         if len(entries_to_post) > 0:
             webhook_obj = trakt.rating_to_webhook(user_slug, entries_to_post)
             logger.debug(f"Webhook payload: {json.dumps(webhook_obj, indent=4)}")
             r = requests.post(DISCORD_WEBHOOK_URL_TRAKT, json=webhook_obj)
-            logger.info(f"Trakt.tv posts found for {user_slug}, webhook status: {r.status_code}: {r.reason}")
+            logger.info(
+                f"Trakt.tv posts found for {user_slug}, webhook status: {r.status_code}: {r.reason}"
+            )
 
-    logger.info(f"Polled {len(LETTERBOXD_USERNAMES)} Letterboxd feeds and {len(TRAKT_USERNAMES)} Trakt.tv users.")
+    logger.info(
+        f"Polled {len(LETTERBOXD_USERNAMES)} Letterboxd feeds and {len(TRAKT_USERNAMES)} Trakt.tv users."
+    )
 
 
 if __name__ == "__main__":
     try:
         main()
     except:
-        logger.exception('Exception while running main()')
+        logger.exception("Exception while running main()")
         raise
