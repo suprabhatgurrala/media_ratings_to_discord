@@ -18,4 +18,6 @@ TRAKT_USERNAMES = config["trakt"].get("usernames")
 
 TMDB_API_KEY = config["trakt"].get("movie_db_api_key")
 
-LOG_PATH = os.path.abspath(config.get("log_path"))
+LOG_PATH = config.get("log_path")
+if LOG_PATH:
+    LOG_PATH = os.path.abspath(LOG_PATH)
