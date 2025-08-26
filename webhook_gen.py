@@ -24,13 +24,17 @@ DISCORD_WEBHOOK_URL_TRAKT = config.DISCORD_WEBHOOK_URL_TRAKT
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-file_handler = logging.FileHandler(LOG_PATH, "a+")
-file_handler.setLevel(logging.DEBUG)
-
 formatter = logging.Formatter("{asctime} - {name} - {levelname} - {message}", style="{")
-file_handler.setFormatter(formatter)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
-logger.addHandler(file_handler)
+if LOG_PATH:
+    file_handler = logging.FileHandler(LOG_PATH, "a+")
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 
 
 def main():
