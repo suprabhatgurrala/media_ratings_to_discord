@@ -7,7 +7,11 @@ requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4",
     "feedparser",
+    "html-to-markdown>=2.19.5",
     "html2text",
     "pandas",
-    "requests"
+    "requests",
 ]
+
+[tool.ruff.lint]
+extend-select = ["I"]
